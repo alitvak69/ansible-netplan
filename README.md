@@ -20,7 +20,12 @@ An [Ansible](https://www.ansible.com) role to manage [Netplan](https://netplan.i
 
 ## Role Variables
 
-[defaults/main.yml](defaults/main.yml)
+See [defaults/main.yml](defaults/main.yml) for the full list. Key options:
+
+- `netplan_config_file`: Destination rendered Netplan YAML path.
+- `netplan_configuration`: Data structure rendered into the Netplan config. Leave empty to skip rendering.
+- `netplan_remove_existing`: When true (default) existing Netplan YAML files (except the target file) are pruned before provisioning.
+- `netplan_debug_configs`: When true, logs the discovered existing Netplan files for troubleshooting. Defaults to `false` to avoid extra output and speed up runs.
 
 ## Dependencies
 

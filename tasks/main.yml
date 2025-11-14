@@ -3,22 +3,35 @@
 - name:       Capturing Existing Configurations
   find:
     paths:    /etc/netplan
-    patterns: "*.yml,*.yaml"
+    patterns:
+      - "*.yml"
+      - "*.yaml"
+    file_type: file
   become:     true
   register:   _netplan_configs
+  when:       netplan_remove_existing | bool
 
-- debug:      var=_netplan_configs
+- name:       Debug Existing Configurations
+  debug:
+    var:      _netplan_configs
+  when:
+    - netplan_debug_configs | bool
+    - _netplan_configs is defined
 
 - name:       Removing Existing Configurations
   file:
-    path:     "{{ item['path'] }}"
+    path:     "{{ item.path }}"
     state:    absent
   become:     true
-  with_items: "{{ _netplan_configs['files'] }}"
-  when:       >
-      netplan_remove_existing and
-      item['path'] != netplan_config_file and
-      netplan_configuration != []
+  loop:       "{{ _netplan_configs.files | default([]) }}"
+  loop_control:
+    label:    "{{ item.path | default('') }}"
+  when:
+    - netplan_remove_existing | bool
+    - _netplan_configs is defined
+    - item.path is defined
+    - item.path != netplan_config_file
+    - netplan_configuration | length > 0
 
 - name:       Configuring Netplan
   template:
@@ -26,15 +39,19 @@
     dest:     "{{ netplan_config_file }}"
   become:     true
   register:   _netplan_configured
-  when:       netplan_configuration != []
+  when:       netplan_configuration | length > 0
 
 - name:       Generating Netplan Configuration
   command:    netplan generate
   become:     true
   register:   _netplan_generated
-  when:       _netplan_configured['changed']
+  when:
+    - _netplan_configured is defined
+    - _netplan_configured.changed
 
 - name:       Applying Netplan Configuration
   command:    netplan apply
   become:     true
-  when:       _netplan_generated['changed']
+  when:
+    - _netplan_generated is defined
+    - _netplan_generated.changed

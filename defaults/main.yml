@@ -78,3 +78,4 @@ netplan_configuration:    []
 netplan_pri_domain:       vagrant.local
 
 netplan_remove_existing:  true
+netplan_debug_configs:    false
