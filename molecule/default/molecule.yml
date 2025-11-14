@@ -1,0 +1,49 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: docker
+
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+
+platforms:
+  - name: instance
+    image: geerlingguy/docker-ubuntu2204-ansible:latest
+    pull: true
+    pre_build_image: true
+    privileged: true
+    command: /lib/systemd/systemd
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+provisioner:
+  name: ansible
+  playbooks:
+    converge: converge.yml
+    prepare: prepare.yml
+    verify: verify.yml
+  env:
+    ANSIBLE_STDOUT_CALLBACK: yaml
+  config_options:
+    defaults:
+      timeout: 60
+  inventory:
+    host_vars:
+      instance:
+        netplan_config_file: /etc/netplan/01-molecule.yaml
+        netplan_configuration:
+          network:
+            version: 2
+            renderer: networkd
+            ethernets:
+              eth0:
+                dhcp4: true
+        netplan_remove_existing: false
+
+verifier:
+  name: ansible

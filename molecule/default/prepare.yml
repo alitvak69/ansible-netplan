@@ -1,0 +1,16 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: true
+        cache_valid_time: 600
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - netplan.io
+          - iproute2
+        state: present

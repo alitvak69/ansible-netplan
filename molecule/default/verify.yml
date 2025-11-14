@@ -1,0 +1,33 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  vars:
+    netplan_config_file: >-
+      {{ hostvars[inventory_hostname].netplan_config_file | default('/etc/netplan/01-molecule.yaml') }}
+  tasks:
+    - name: Stat rendered Netplan file
+      stat:
+        path: "{{ netplan_config_file }}"
+      register: _netplan_stat
+
+    - name: Assert Netplan file exists
+      assert:
+        that:
+          - _netplan_stat.stat.exists
+          - _netplan_stat.stat.size | int > 0
+
+    - name: Load rendered Netplan configuration
+      slurp:
+        path: "{{ netplan_config_file }}"
+      register: _netplan_slurp
+
+    - name: Parse rendered Netplan configuration
+      set_fact:
+        _netplan_rendered: "{{ _netplan_slurp.content | b64decode | from_yaml }}"
+
+    - name: Validate rendered Netplan structure
+      assert:
+        that:
+          - _netplan_rendered.network.renderer == 'networkd'
+          - _netplan_rendered.network.ethernets.eth0.dhcp4 | bool

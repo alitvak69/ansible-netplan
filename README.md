@@ -31,6 +31,12 @@ See [defaults/main.yml](defaults/main.yml) for the full list. Key options:
 
 ## Example Playbook
 
+## Testing
+
+- Install Molecule’s runtime deps (Python `molecule[docker]`, `yamllint`, `ansible-lint`, Docker Engine).
+- From the repo root run `molecule test` to execute the full create → converge → verify → destroy cycle.
+- Use `molecule converge`/`molecule verify` when iterating to shorten feedback loops.
+
 ## License
 
 MIT
