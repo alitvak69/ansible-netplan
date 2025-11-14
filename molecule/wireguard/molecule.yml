@@ -5,14 +5,16 @@ dependency:
     ignore-certs: true
     ignore-errors: true
 driver:
-  name: vagrant
+  name: docker
 platforms:
-  - name: vagrant-ubuntu
-    box: ubuntu/focal64
-    memory: 4048
-    cpus: 4
-    instance_raw_config_args:
-      - "vm.network 'forwarded_port', guest: 8081, host: 30080"
+  - name: netplan-ubuntu
+    image: geerlingguy/docker-ubuntu2204-ansible:latest
+    pre_build_image: true
+    privileged: true
+    command: /lib/systemd/systemd
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cgroupns_mode: host
 provisioner:
   name: ansible
   lint: ansible-lint --force-color
